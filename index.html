@@ -6,4 +6,15 @@ overview: true
 
 <h1>Simple Jekyll Teplate</h1>
 
-<p>This is a simpler version of jekyll.</p>
+{% assign openapi = site.data.openapi %}
+
+{{ openapi.info.title }}
+
+{% for path in openapi.paths %}
+    <p><strong>{{ path[0] }}</strong></p>
+
+    {% for method in path[1] %}
+        <p><strong>{{ method[0] }}</strong></p>
+    {% endfor %}
+
+{% endfor %}
