@@ -4,17 +4,341 @@ title: Jekyll Template
 overview: true
 ---
 
-<h1>Simple Jekyll Teplate</h1>
+<script>
+
+  function showInfoBlockYAML()
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('info').value = jsyaml.dump(master_json['info']);
+    }
+
+  function showPathMethodYAML(path_count,path,method_count,verb)
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('method-' + path_count + '-' + method_count).value = jsyaml.dump(master_json['paths'][path][verb]);
+    }
+
+  function showSchemaYAML(schema_count,schema)
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('schema-' + schema_count).value = jsyaml.dump(master_json['components']['schemas'][schema]);
+    }
+
+  function copyBookmark(anchor,id)
+    {
+
+    /* Get the text field */
+    var copyText = document.getElementById(id);
+
+    /* Select the text field */
+    copyText.select();
+
+    /* Copy the text inside the text field */
+    document.execCommand("copy");
+
+    /* Alert the copied text */
+    alert("Copied the text: " + copyText.value);
+  }
+
+
+</script>
 
 {% assign openapi = site.data.openapi %}
+{% assign path_count = 0 %}
+{% assign method_count = 0 %}
+{% assign schema_count = 0 %}
 
-{{ openapi.info.title }}
+<h1>OpenAPI Interface</h1>
+<p>This is a tool for working with the OpenAPI specification. Breaking the API definition down into smaller, more managable chunks, with text, and others to help understand what OpenAPI is, while also editing a real world OpenAPI definition for any web API.</p>
 
+<center>
+  <table cellpadding="5" cellspacing="5">
+    <tr>
+      <td align="right"><strong>Jump to Path:</strong></td>
+      <td>
+        <script>
+          function pathJump(anchor)
+            {
+            location.href = "#" + anchor.value;
+            }
+        </script>
+        <select id="path-jump" onchange="pathJump(this);">
+        {% for path in openapi.paths %}
+          {% assign path_name = path[0] %}
+          {% assign path_slug = path_name | replace: '/','-' | replace: '{','' | replace: '}','' | replace: '_','-' | prepend: 'path' %}
+          {% assign anchor = "anchor" %}
+          {% assign path_slug = anchor| prepend: path_slug %}
+          <option value="{{ path_slug }}">{{ path_name }}</option>
+        {% endfor %}
+        </select>
+      </td>
+    </tr>
+    <tr>
+      <td align="right"><strong>Jump to Schema:</strong></td>
+      <td>
+        <script>
+          function schemaJump(anchor)
+            {
+            location.href = "#" + anchor.value;
+            }
+        </script>
+        <select id="path-jump" onchange="schemaJump(this);">
+        {% for schema in openapi.components.schemas %}
+          {% assign schema_name = schema[0] %}
+          {% assign schema_title = schema[1].title %}
+          <option value="{{ schema_name }}">{{ schema_title }}</option>
+        {% endfor %}
+        </select>
+      </td>
+    </tr>
+  </table>
+</center>
+<br>
+<p>The goal with this interface is to help manage all of the complex details of this API contract in a single screen that allows every aspect of it to be managed.</p>
+<center><a class="btn btn-large btn-success" href="javascript:void(0);" onclick="javascript:introJs().start();">Walk Me Through What This Is!</a></center>
+<hr>
+<div id="master" style="height: 250px; width: 800px; display: none;">{{ openapi | jsonify }}</div>
+
+<h2>Info Collection</h2>
+<p>The info collection provides the title, description, and version for this API, providing the basics of what it delivers.</p>
+<table>
+
+  <tr style="">
+    <td style="width: 50%; padding: 10px;" valign="top">
+
+      <p data-step="1" data-intro="This is the title of this API.">
+        <strong>Title:</strong> {{ openapi.info.title }}
+        <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="This is the title of this API--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+      </p>
+      <p data-step="2" data-intro="This is the description of this API.">
+        <strong>Description:</strong> {{ openapi.info.description }}
+        <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="This is the description of this API--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+      </p>
+      <p data-step="3" data-intro="This is the version of this API.">
+        <strong>Version:</strong> {{ openapi.info.version }}
+        <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="This is the version of this API--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+      </p>
+
+    </td>
+    <td style="width: 50%; padding: 10px;" valign="top" data-step="4" data-intro="You can edit these things here."><textarea style="width:100%; height: 250px;" id="info"></textarea></td>
+  </tr>
+
+</table>
+
+<script>
+  showInfoBlockYAML();
+</script>
+
+<a name="paths"></a>
+<h2>Paths Collection</h2>
+<p>These are the unique paths to each resource, providing programmatic access to the capabilities available within each individual method, within each of the paths.</p>
+<table>
 {% for path in openapi.paths %}
-    <p><strong>{{ path[0] }}</strong></p>
 
-    {% for method in path[1] %}
-        <p><strong>{{ method[0] }}</strong></p>
-    {% endfor %}
+  {% assign path_name = path[0] %}
+  {% assign path_slug = path_name | replace: '/','-' | replace: '{','' | replace: '}','' | replace: '_','-' | prepend: 'path' %}
+  {% assign anchor = "anchor" %}
+  {% assign path_slug = anchor| prepend: path_slug %}
+
+  <tr>
+    <td colspan="2">
+      <input type="hidden" id="path-bookmark-{{ path_count }}" value="{{ site.url }}#{{ path_slug }}">
+      <a name="{{ path_slug }}"></a>
+      {% if path_count != 0 %}
+      <br><br><br>
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td style="width: 50%; padding: 10px; padding-top: 20px; border-top: solid 2px #000;" valign="top">
+      <p style="font-size: 18px;"{% if path_count == 0 %} data-step="5" data-intro="This is the path for the {{ path_name }} resource."{% endif %}>
+        <strong>{{ path_name }}</strong><br>
+        (<i><a href="#" style="" onclick="copyBookmark('{{ path_slug }}','path-bookmark-{{ path_count }}'); return false;">copy url to this path</a></i>)
+      </p>
+    </td>
+    <td style="width: 50%; padding: 10px; padding-top: 20px;" valign="top"{% if path_count == 0 %} data-step="6" data-intro="You can edit the path name here."{% endif %}><input type="text" id="path-{{ path_count }}" value="{{ path_name }}" style="width: 100%;"></td>
+  </tr>
+
+  {% assign path_count = path_count | plus: 1 %}
+
+  {% for method in path[1] %}
+
+    {% assign verb = method[0] %}
+
+    {% if verb == 'get' %}
+      {% assign verb_color = "63AB62" %}
+    {% endif %}
+
+    {% if verb == 'post' %}
+      {% assign verb_color = "FFA500" %}
+    {% endif %}
+
+    {% if verb == 'put' %}
+      {% assign verb_color = "0000FF" %}
+    {% endif %}
+
+    {% if verb == 'patch' %}
+      {% assign verb_color = "ebeb32" %}
+    {% endif %}
+
+    {% if verb == 'delete' %}
+      {% assign verb_color = "FF0000" %}
+    {% endif %}
+
+    <tr{% if path_count == 0 %} data-step="7" data-intro="This is the {{ verb }} method for the {{ path_name }} resource."{% endif %}>
+      <td style="padding-left: 25px; font-size: 14px; font-weight: bold; background-color: #{{ verb_color }}; color: #FFF; padding-bottom: 5px;" colspan="2">{{ verb | upcase }}</td>
+    </tr>
+    <tr>
+      <td style="width: 50%; padding-left: 25px; padding-top: 10px;" valign="top">
+
+        <p{% if path_count == 0 %} data-step="8" data-intro="This is the summary the {{ path_name }} resource, providing a concise description of what this method does."{% endif %}><strong>Summary:</strong> {{ method[1].summary }}
+          <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="This is the summary for <strong>{{ path_name }} {{ verb }}</strong> method.<br><br> It should be a simple, concise description of what this API does--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+        </p>
+
+        <p{% if path_count == 0 %} data-step="9" data-intro="This is the summary the {{ path_name }} resource, providing a more detailed description of what this method does."{% endif %}>
+          <strong>Description:</strong> {{ method[1].description }}
+          <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="This is the description for <strong>{{ path_name }} {{ verb }}</strong> method.<br><br> This can be a more detailed description of what this API does--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+        </p>
+
+        {% assign path_parameters = method[1].parameters %}
+        {% assign path_parameter_count = 0 %}
+        {% for parameter in path_parameters %}
+          {% if parameter.in == 'path' %}
+            {% assign path_parameter_count = path_parameter_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+
+        {% if path_parameter_count > 0 %}
+          <p>
+            <strong>Path Parameters:</strong>
+            <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="These are the path parameters for the <strong>{{ path_name }} {{ verb }}</strong> method.<br><br> It provides a list of parameters that are needed in the path for this method--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+          </p>
+          <ul>
+            {% for parameter in path_parameters %}
+
+              {% assign parameter_name = parameter.name %}
+              {% assign parameter_description = parameter.description %}
+              {% assign parameter_type = parameter.schema.type %}
+
+              {% if parameter.in == 'path' %}
+                <li>{{ parameter_name }} (<i>{{ parameter_type }}</i>) - {{ parameter_description }} </li>
+              {% endif %}
+
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% assign query_parameters = method[1].parameters %}
+        {% assign query_parameter_count = 0 %}
+        {% for parameter in query_parameters %}
+          {% if parameter.in == 'query' %}
+            {% assign query_parameter_count = query_parameter_count | plus: 1 %}
+          {% endif %}
+        {% endfor %}
+
+        {% if query_parameter_count > 0 %}
+          <p>
+            <strong>Query Parameters:</strong>
+            <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" title="Summary" data-content="These are the query parameters for the {{ path_name }} {{ verb }} method. It provides a list of parameters that can be applied in the query for this method--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+          </p>
+          <ul>
+            {% for parameter in query_parameters %}
+
+              {% assign parameter_name = parameter.name %}
+              {% assign parameter_description = parameter.description %}
+              {% assign parameter_type = parameter.schema.type %}
+
+              {% if parameter.in == 'query' %}
+                <li>{{ parameter_name }} (<i>{{ parameter_type }}</i>) - {{ parameter_description }} </li>
+              {% endif %}
+
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% if method[1].requestBody %}
+          <p><strong>Request Body:</strong></p>
+        {% endif %}
+
+      </td>
+      <td style="width: 50%; padding-top: 10px;" valign="top">
+        <textarea style="width:100%; height: 250px;" id="method-{{ path_count }}-{{ method_count }}"></textarea>
+        <script>
+          showPathMethodYAML('{{ path_count }}','{{ path_name }}','{{ method_count }}','{{ verb }}');
+        </script>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-left: 25px;" valign="top" colspan="2">
+        <hr>
+      </td>
+    </tr>
+
+    {% assign method_count = method_count | plus: 1 %}
+
+  {% endfor %}
 
 {% endfor %}
+<table>
+
+<a name="schemas"></a>
+<h2>Schema Collection</h2>
+<p>These are the schema that are used across the request and response structure of the API paths listed above, providing details regarding what is expected when you put this API to use.</p>
+  <table>
+  {% for schema in openapi.components.schemas %}
+
+    {% assign schema_name = schema[0] %}
+    {% assign schema_title = schema[1].title %}
+    {% assign schema_type = schema[1].type %}
+
+      <tr>
+        <td valign="top" colspan="2">
+          <a name="{{ schema_name }}"></a>
+          {% if schema_count != 0 %}<br><br>{% endif %}
+        </td>
+      </tr>
+
+    <tr style="background-color: #505050;">
+      <td style="width: 50%; padding: 10px; padding-top: 20px;" valign="top"><a name="{{ schema_name }}"></a><p style="font-size: 14px; color:#FFF;"><strong>{{ schema_title }} ({{ schema_name }})<br>{{ schema_type }}</strong></p></td>
+      <td style="width: 50%; padding: 10px; padding-top: 20px;" valign="top"><input type="text" id="schema-{{ schema_count }}" value="{{ schema_name }}" style="width: 100%;"></td>
+    </tr>
+
+    {% assign schema_count = schema_count | plus: 1 %}
+
+    <tr>
+      <td style="width: 50%; padding-left: 25px; padding-top: 10px; padding-right: 15px;" valign="top">
+
+          <p>
+            <strong>Properties:</strong>
+            <a href="#" onclick="return false;" data-toggle="popover" data-trigger="hover" data-html="true" title="Summary" data-content="These are the properties for the <strong>{{ schema_title }}</strong> {{ schema_type }}.<br><br> It provides a list of properties that are available for this {{ schema_type }}--you can edit it using the YAML to the right."><img src="{{ site.repo }}/images/question.jpg" width="25"></a>
+          </p>
+
+          <ul>
+            {% for property in schema[1].properties %}
+
+              {% assign property_name = property[0] %}
+              {% assign property_description = property[1].description %}
+              {% assign property_type = property[1].type %}
+
+              <li><strong>{{ property_name }}</strong> (<i>{{ property_type }}</i>) - {{ property_description }} </li>
+
+            {% endfor %}
+          </ul>
+
+        </td>
+        <td style="width: 50%; padding-top: 10px;" valign="top">
+          <textarea style="width:100%; height: 550px;" id="schema-{{ schema_count }}"></textarea>
+          <script>
+            showSchemaYAML('{{ schema_count }}','{{ schema_name }}');
+          </script>
+        </td>
+      </tr>
+
+  {% endfor %}
+  <table>
+
+  <script>
+
+    $('[data-toggle="popover"]').popover()
+
+  </script>
