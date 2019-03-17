@@ -1,1 +1,5 @@
-theme: jekyll-theme-hacker
+markdown: kramdown
+highlighter: pygments
+relative_permalinks: false
+permalink: /news/:year/:month/:day/:title/
+excerpt_separator: ""
