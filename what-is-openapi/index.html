@@ -330,14 +330,22 @@ info:<br>
 {{ tab }}{{ tab }}{{ tab }}{{ tab }}{{ tab }}{{ tab }}type: string<br>
 
 <br><br>
-<span data-step="43" data-intro="Providing us with the machine readable contract we need to deploy each API to Loopback.">
-<h2>Deploy To Loopback Gateway</h2>
-<p><img src="https://cdn-images-1.medium.com/max/1600/1*U2bi17I5e52U33SevUYpEg.png" width="450"></p>
-</span>
-
-<span data-step="44" data-intro="Dynamically driving interactive API documentation for internal and external usage.">
-<h2>Deploy To Documentation</h2>
+<h2 data-step="43" data-intro="Providing us with the machine readable contract we need to deploy each API to Loopback.">Deploy To Loopback Gateway</h2>
+<p><img src="https://cdn-images-1.medium.com/max/1600/1*U2bi17I5e52U33SevUYpEg.png" width="350"></p>
+<br><br>
+<h2 data-step="44" data-intro="Dynamically driving interactive API documentation for internal and external usage.">Deploy To Documentation</h2>
 <div id="swagger-ui"></div>
+
+<style>
+.topbar
+  {
+  display:none;
+  }
+.info
+  {
+  display:none;
+  }
+</style>
 
 <script src="{{ site.repo }}javascript/swagger-ui-bundle.js"> </script>
 <script src="{{ site.repo }}javascript/swagger-ui-standalone-preset.js"> </script>
@@ -362,4 +370,13 @@ window.onload = function() {
   window.ui = ui
 }
 </script>
-</span>
+<br><br>
+<h2 data-step="45" data-intro="Power API client tooling like Postman, by importing OpenAPI definitions">Postman Collections (Clients)</h2>
+<p><img src="../images/postman-collections.png" width="650"></p>
+<br><br>
+<h2 data-step="46" data-intro="Defining automate testing using the OpenAPI and Dredd">Dredd API Testing</h2>
+<p><img src="../images/dredd.jpeg" width="650"></p>
+<br><br>
+<h2 data-step="47" data-intro="And much more using the OpenAPI specification as our contract language.">And much more...</h2>
+<p><img src="../images/openapi.png" width="650"></p>
+<br><br>
