@@ -1,0 +1,189 @@
+---
+layout: default
+title: Jekyll Template
+overview: true
+---
+
+<script>
+
+  function showInfoBlockYAML()
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('info').value = jsyaml.dump(master_json['info']);
+    }
+
+  function showPathMethodYAML(path_count,path,method_count,verb)
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('method-' + path_count + '-' + method_count).value = jsyaml.dump(master_json['paths'][path][verb]);
+    }
+
+  function showSchemaYAML(schema_count,schema)
+    {
+    master_json = JSON.parse(document.getElementById("master").innerHTML);
+    document.getElementById('schema-' + schema_count).value = jsyaml.dump(master_json['components']['schemas'][schema]);
+    }
+
+  function copyBookmark(anchor,id)
+    {
+
+    /* Get the text field */
+    var copyText = document.getElementById(id);
+
+    /* Select the text field */
+    copyText.select();
+
+    /* Copy the text inside the text field */
+    document.execCommand("copy");
+
+    /* Alert the copied text */
+    alert("Copied the text: " + copyText.value);
+  }
+
+
+</script>
+
+{% assign openapi = site.data.openapi %}
+{% assign path_count = 0 %}
+{% assign method_count = 0 %}
+{% assign schema_count = 0 %}
+
+<h1>OpenAPI Interface</h1>
+<p>Description</p>
+
+openapi: 3.0.0<br>
+
+
+<a name="info"></a>
+info:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title: {{ openapi.info.title }}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description: {{ openapi.info.description }}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version: {{ openapi.info.version }}<br>
+
+<a name="servers"></a>
+servers:<br>
+{% for server in openapi.servers %}
+&nbsp;&nbsp;&nbsp;-&nbsp;url:&nbsp;{{ server }}<br>
+{% endfor %}
+
+<a name="paths"></a>
+paths:<br>
+{% for path in openapi.paths %}
+
+  {% assign path_name = path[0] %}
+  {% assign path_slug = path_name | replace: '/','-' | replace: '{','' | replace: '}','' | replace: '_','-' | prepend: 'path' %}
+  {% assign anchor = "anchor" %}
+  {% assign path_slug = anchor| prepend: path_slug %}
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ path_name }}:<br>
+
+  {% assign path_count = path_count | plus: 1 %}
+
+  {% for method in path[1] %}
+
+    {% assign verb = method[0] %}
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ verb | upcase }}:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;summary: {{ method[1].summary }}<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description: {{ method[1].description }}<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;operationId: {{ method[1].operationId }}<br>
+
+    {% assign path_parameters = method[1].parameters %}
+    {% assign path_parameter_count = 0 %}
+    {% for parameter in path_parameters %}
+      {% if parameter.in == 'path' %}
+        {% assign path_parameter_count = path_parameter_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;parameters:<br>
+
+    {% for parameter in path_parameters %}
+
+      {% assign parameter_name = parameter.name %}
+      {% assign parameter_in = parameter.in %}
+      {% assign parameter_description = parameter.description %}
+      {% assign parameter_type = parameter.schema.type %}
+
+      {% if parameter.in == 'path' %}
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- in: {{ parameter_in }}<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: {{ parameter_name }}<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: {{ parameter_type }}<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description: {{ parameter_description }}<br>
+      {% endif %}
+
+    {% endfor %}
+
+    {% assign query_parameters = method[1].parameters %}
+    {% assign query_parameter_count = 0 %}
+    {% for parameter in query_parameters %}
+      {% if parameter.in == 'query' %}
+        {% assign query_parameter_count = query_parameter_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+
+    {% for parameter in query_parameters %}
+
+      {% assign parameter_name = parameter.name %}
+      {% assign parameter_description = parameter.description %}
+      {% assign parameter_type = parameter.schema.type %}
+
+      {% if parameter.in == 'query' %}
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- in: {{ parameter_in }}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: {{ parameter_name }}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type: {{ parameter_type }}<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description: {{ parameter_description }}<br>
+      {% endif %}
+
+    {% endfor %}
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tags:<br>
+    {% for tag in method[1].tags %}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- {{ tag }}<br>
+    {% endfor %}
+
+        {% if method[1].requestBody %}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requestBody:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description: {{ method[1].requestBody.description }}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;application/json:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;schema:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$ref:&nbsp;{{ method[1].requestBody.content['application/json'].schema['$ref'] }}<br>
+        {% endif %}
+
+    {% assign method_count = method_count | plus: 1 %}
+
+  {% endfor %}
+
+{% endfor %}
+
+components:<br>
+{% for schema in openapi.components.schemas %}
+
+  {% assign schema_name = schema[0] %}
+  {% assign schema_title = schema[1].title %}
+  {% assign schema_type = schema[1].type %}
+
+  <a name="{{ schema_name }}">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ schema_name }}<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;title:&nbsp;{{ schema_title }}<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ schema_type }}<br>
+
+  {% assign schema_count = schema_count | plus: 1 %}
+
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;properties:<br>
+  {% for property in schema[1].properties %}
+
+    {% assign property_name = property[0] %}
+    {% assign property_description = property[1].description %}
+    {% assign property_type = property[1].type %}
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ property_name }}:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type:&nbsp;{{ property_type }}<br>
+    {% if property_description %}
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description:&nbsp;{{ property_description }}<br>
+    {% endif %}
+
+  {% endfor %}
+
+{% endfor %}

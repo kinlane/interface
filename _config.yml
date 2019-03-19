@@ -2,8 +2,9 @@ markdown: kramdown
 highlighter: rouge
 relative_permalinks: false
 permalink: /news/:year/:month/:day/:title/
-excerpt_separator: ""
 
-repo: /interface/
+#repo: /interface/
+repo: /
 
-url: https://kinlane.github.io/interface/
+#url: https://kinlane.github.io/interface/
+url: http://127.0.0.1:4000/
